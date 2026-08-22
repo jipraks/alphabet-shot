@@ -90,7 +90,29 @@ python3 -m http.server 8000
 
 Lalu buka `http://localhost:8000/`.
 
-## Deploy ke GitHub Pages
+## Situs live
+
+**https://jipraks.github.io/alphabet-shot/**
+
+GitHub Pages sudah aktif. Sumbernya saat ini branch **`gh-pages`**, yang isinya
+cermin dari `main` (repo ini adalah situsnya sendiri — statis, tanpa build step).
+
+> **Selama sumbernya masih `gh-pages`:** setiap perubahan harus di-push ke
+> `main` **dan** `gh-pages`, kalau tidak situs live tidak ikut berubah.
+>
+> ```bash
+> git push origin main
+> git push --force origin main:gh-pages
+> ```
+>
+> **Cara menyederhanakan (satu klik, disarankan):** Settings → Pages → Source:
+> *Deploy from a branch* → branch **`main`**, folder **`/ (root)`**. Setelah itu
+> branch `gh-pages` bisa dihapus dan cukup push ke `main` saja.
+
+Catatan: mengaktifkan Pages dan mengganti sumbernya hanya bisa dilakukan dari
+Settings repo — endpoint API `/pages` tidak bisa diakses dari sesi agen.
+
+## Deploy dari nol (repo lain)
 
 1. Repo publik, branch `main`
 2. Settings → Pages → Source: **Deploy from a branch**, branch `main`, folder `/ (root)`
