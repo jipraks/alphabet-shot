@@ -75,6 +75,7 @@ async function mulaiRonde(modeId) {
   modeTerakhir = modeId;
   sedangMain = true;
   batal = false;
+  audio.resetCombo();
   setState('BERMAIN');
 
   const sebelum = {};
@@ -234,6 +235,7 @@ async function init() {
   weapon.setPelurMaks(3);
 
   const field = new BalloonField({ arena, fx, fxTop, audio });
+  field.setLaras(weapon.el);      // balon tidak boleh bersembunyi di belakang laras
 
   ctx = {
     app, arena, kios, weapon, field, ui, audio, progress, stats,

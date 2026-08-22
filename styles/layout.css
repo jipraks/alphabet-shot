@@ -431,4 +431,8 @@ body { user-select: none; -webkit-user-select: none; }
   :root { --shelf-slot: 26px; --balon-size: clamp(80px, 22vh, 96px); --huruf-balon: clamp(48px, 13vh, 56px); }
   .terpal { height: 38px; }
   .lampu-row { height: 10px; }
+  #bench { height: 52px; }
+  #perintah { top: 2px; }
+  #perintah .kartu { font-size: 44px; border-width: 3px; padding: 0 0.24em 0.04em; }
+  #perintah .label { font-size: 10px; }
 }

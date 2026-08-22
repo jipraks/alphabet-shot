@@ -95,7 +95,8 @@ export class MesinRonde {
     ui.perintahTampil(target, o.label || 'Tembak huruf kecilnya!');
     field.ukurUlang();          // ukur SETELAH kartu perintah tampil
     field.spawn(daftar);
-    audio.resetCombo();
+    // Combo TIDAK direset di sini: nada pop naik do-re-mi-fa-sol selama anak
+    // belum salah, lintas perintah. Reset hanya saat salah atau auto solve.
     audio.katakanHuruf(target, narasiPerintah(target), { prioritas: true });
     if (o.onMulai) o.onMulai({ target, daftar });
 
@@ -117,6 +118,7 @@ export class MesinRonde {
     this._selesaikanSendiri = async (kata = 'Ini dia') => {
       if (selesai) return;
       selesai = 'otomatis';
+      audio.resetCombo();
       timer.forEach(clearTimeout);
       const b = field.benar();
       if (!b) { resolusi(); return; }
@@ -197,6 +199,7 @@ export class MesinRonde {
 
       // Salah: peluru memantul, tanpa komentar negatif, tanpa teks "Salah"
       field.pantul(sasaran);
+      audio.resetCombo();       // tangga nada mulai dari do lagi
       if (o.catat !== false) stats.catat(target, { benar: false });
       if (o.onSalah) o.onSalah({ target, huruf: sasaran.huruf });
       if (weapon.kosong && !selesai) {

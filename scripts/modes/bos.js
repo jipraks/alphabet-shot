@@ -112,6 +112,7 @@ export async function jalankan(ctx) {
     } else {
       salahHit += 1;
       field.pantul(bos);
+      audio.resetCombo();
       stats.catat(target.toUpperCase(), { benar: false });
     }
   };

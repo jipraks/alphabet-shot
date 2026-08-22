@@ -30,6 +30,9 @@ export class BalloonField {
     this.ukuran = { w: 100, h: 116 };
     this.rect = { w: 0, h: 0, left: 0, top: 0 };
     this.amanAtas = 0;
+    this.larasEl = null;
+    this.zona = null;   // kotak larangan di bawah-tengah: balon tidak boleh
+                        // bersembunyi di belakang laras
 
     this.poolConfetti = new Pool(this.fx, 'confetti', CONFETTI_MAKS);
     this.poolHuruf = new Pool(this.fxTop, 'huruf-terbang', 6, (el) => { el.style.opacity = '0'; });
@@ -49,6 +52,7 @@ export class BalloonField {
     this.ukuran = { w, h: w * 1.16 };
     this.gap = parseFloat(getComputedStyle(this.arena).getPropertyValue('--balon-gap')) || 24;
     this.assist = parseFloat(getComputedStyle(this.arena).getPropertyValue('--aim-assist')) || 40;
+    this.zona = this._hitungZona();
     const perintah = this.arena.querySelector('#perintah');
     const pr = perintah ? perintah.getBoundingClientRect() : null;
     this.amanAtas = pr ? Math.max(0, pr.bottom - r.top + 8) : 8;
@@ -57,6 +61,38 @@ export class BalloonField {
       b.x = Math.min(Math.max(0, b.x), Math.max(0, this.rect.w - this.ukuran.w));
       b.y = Math.min(Math.max(this.amanAtas, b.y), Math.max(this.amanAtas, this.rect.h - this.ukuran.h));
     });
+  }
+
+  /** Laras yang harus dihindari balon (dipasang sekali dari main.js). */
+  setLaras(el) {
+    this.larasEl = el;
+    this.zona = this._hitungZona();
+  }
+
+  /**
+   * Kotak larangan dalam koordinat arena: sebesar laras plus ruang untuk
+   * rotasi +-28 derajat. Dibaca sekali saat resize, bukan di dalam rAF.
+   */
+  _hitungZona() {
+    if (!this.larasEl) return null;
+    const r = this.larasEl.getBoundingClientRect();
+    if (!r.width) return null;
+    const lega = r.width * 0.35;             // sapuan saat laras berputar
+    const x1 = r.left - this.rect.left - lega;
+    const x2 = r.right - this.rect.left + lega;
+    const y1 = r.top - this.rect.top - 8;    // sedikit di atas moncong
+    if (y1 >= this.rect.h) return null;      // laras tidak masuk arena
+    return { x1, x2, y1: Math.max(this.amanAtas, y1) };
+  }
+
+  /** Geser posisi ke atas zona larangan kalau perlu. */
+  _hindariZona(x, y, w, h) {
+    const z = this.zona;
+    if (!z) return y;
+    const cx = x + w / 2;
+    if (cx < z.x1 || cx > z.x2) return y;
+    if (y + h <= z.y1) return y;
+    return Math.max(this.amanAtas, z.y1 - h);
   }
 
   get lebarBalon() { return this.ukuran.w; }
@@ -70,8 +106,9 @@ export class BalloonField {
     const w = this.ukuran.w;
     const h = this.ukuran.h;
     const gap = this.gap || 24;
+    const bawah = this.zona ? Math.max(0, this.rect.h - this.zona.y1) : 0;
     const kolom = Math.floor(this.rect.w / (w + gap));
-    const baris = Math.floor((this.rect.h - this.amanAtas) / (h + 8));
+    const baris = Math.floor((this.rect.h - this.amanAtas - bawah * 0.5) / (h + 8));
     return Math.max(3, kolom * Math.max(1, baris));
   }
 
@@ -115,10 +152,9 @@ export class BalloonField {
     return petak.slice(0, n).map(({ c, r }) => {
       const jitterX = Math.max(0, cw - w);
       const jitterY = Math.max(0, ch - h);
-      return {
-        x: Math.min(Math.max(0, this.rect.w - w), c * cw + rnd(0, jitterX)),
-        y: Math.min(Math.max(atas, atas + this.rect.h - atas - h), atas + r * ch + rnd(0, jitterY)),
-      };
+      const x = Math.min(Math.max(0, this.rect.w - w), c * cw + rnd(0, jitterX));
+      const y = Math.min(Math.max(atas, this.rect.h - h), atas + r * ch + rnd(0, jitterY));
+      return { x, y: this._hindariZona(x, y, w, h) };
     });
   }
 
@@ -190,7 +226,8 @@ export class BalloonField {
       for (let coba = 0; coba < 70; coba += 1) {
         const x = rnd(0, maksX);
         const y = rnd(atas, maksY);
-        if (jarakKe(x, y) >= minJarak) return { x, y };
+        const yz = this._hindariZona(x, y, w, h);
+        if (jarakKe(x, yz) >= minJarak) return { x, y: yz };
       }
     }
     // Cadangan: ambil kandidat paling lega, bukan asal acak
@@ -201,7 +238,7 @@ export class BalloonField {
       const d = jarakKe(x, y);
       if (d > terbaik.d) terbaik = { x, y, d };
     }
-    return { x: terbaik.x, y: terbaik.y };
+    return { x: terbaik.x, y: this._hindariZona(terbaik.x, terbaik.y, w, h) };
   }
 
   bersihkan() {
@@ -244,10 +281,78 @@ export class BalloonField {
       if (b.x >= maksX) { b.x = maksX; b.vx = -Math.abs(b.vx); }
       if (b.y <= minY) { b.y = minY; b.vy = Math.abs(b.vy); }
       if (b.y >= maksY) { b.y = maksY; b.vy = -Math.abs(b.vy); }
+      // jangan pernah melayang di belakang laras
+      const z = this.zona;
+      if (z) {
+        const cx = b.x + b.w / 2;
+        if (cx > z.x1 && cx < z.x2 && b.y + b.h > z.y1) {
+          b.y = Math.max(minY, z.y1 - b.h);
+          b.vy = -Math.abs(b.vy);
+        }
+      }
       // goyangan sinus kecil supaya terasa mengambang
       b.rx = b.x + Math.sin(t * 1.1 + b.fase) * b.ampl;
       b.ry = b.y + Math.cos(t * 0.85 + b.fase) * b.ampl * 0.6;
       this._gambar(b);
+    }
+    this._pisahkan();
+  }
+
+  /**
+   * Balon saling menolak lembut supaya jaraknya tidak pernah menutup.
+   * Tanpa ini balon melayang saling menembus dan aim assist 40px jadi
+   * ambigu — anak menembak balon yang tidak dia maksud.
+   */
+  _pisahkan() {
+    const n = this.balon.length;
+    for (let i = 0; i < n; i += 1) {
+      const a = this.balon[i];
+      if (!a.hidup || a.bos) continue;
+      for (let j = i + 1; j < n; j += 1) {
+        const c = this.balon[j];
+        if (!c.hidup || c.bos) continue;
+        const ax = a.x + a.w / 2;
+        const ay = a.y + a.w / 2;
+        const cx = c.x + c.w / 2;
+        const cy = c.y + c.w / 2;
+        let dx = cx - ax;
+        let dy = cy - ay;
+        let d = Math.hypot(dx, dy);
+        const minD = (a.w + c.w) / 2 + 12;
+        if (d >= minD) continue;
+        if (d < 0.01) { dx = 1; dy = 0; d = 1; }   // hindari pembagian nol
+        const dorong = (minD - d) / 2;
+        const nx = (dx / d) * dorong;
+        const ny = (dy / d) * dorong;
+        a.x -= nx; a.y -= ny;
+        c.x += nx; c.y += ny;
+        // saling memantul lembut
+        if ((c.vx - a.vx) * dx + (c.vy - a.vy) * dy < 0) {
+          const tx = a.vx; const ty = a.vy;
+          a.vx = c.vx; a.vy = c.vy;
+          c.vx = tx; c.vy = ty;
+        }
+        this._jepit(a);
+        this._jepit(c);
+        a.rx = a.x; a.ry = a.y;
+        c.rx = c.x; c.ry = c.y;
+        this._gambar(a);
+        this._gambar(c);
+      }
+    }
+  }
+
+  /** Jaga balon tetap di dalam arena dan di luar zona laras. */
+  _jepit(b) {
+    const maksX = Math.max(0, this.rect.w - b.w);
+    const minY = this.amanAtas;
+    const maksY = Math.max(minY, this.rect.h - b.h);
+    b.x = Math.min(Math.max(0, b.x), maksX);
+    b.y = Math.min(Math.max(minY, b.y), maksY);
+    const z = this.zona;
+    if (z) {
+      const cx = b.x + b.w / 2;
+      if (cx > z.x1 && cx < z.x2 && b.y + b.h > z.y1) b.y = Math.max(minY, z.y1 - b.h);
     }
   }
 

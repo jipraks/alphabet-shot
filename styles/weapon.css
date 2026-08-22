@@ -261,6 +261,12 @@
   z-index: var(--z-shell);
 }
 
+/* Layar sangat pendek (HP landscape): laras diperkecil supaya balon punya
+   ruang bernapas di atas meja. */
+@media (max-height: 430px) {
+  .weapon { --bh: clamp(76px, 22vh, 104px); }
+}
+
 /* ---------- Beruang duel ---------- */
 #beruang {
   position: absolute;

@@ -104,6 +104,7 @@ export async function jalankan(ctx) {
       salah += 1;
       berturut = 0;
       field.pantul(sasaran);
+      audio.resetCombo();
       stats.catat(target, { benar: false });
     }
   };
