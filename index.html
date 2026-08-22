@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Tembak Huruf</title>
+<meta name="description" content="Permainan tembak balon untuk anak 4–6 tahun: mencocokkan huruf besar dengan huruf kecil. Tanpa iklan, tanpa data keluar dari perangkat.">
+<meta name="theme-color" content="#16173A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./assets/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="./assets/icon-192.png">
+<link rel="stylesheet" href="./styles/tokens.css">
+<link rel="stylesheet" href="./styles/layout.css">
+<link rel="stylesheet" href="./styles/weapon.css">
+<link rel="stylesheet" href="./styles/screens.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===================== KIOS ===================== -->
+  <div id="kios">
+
+    <!-- lampu bohlam gantung -->
+    <div class="lampu-row" aria-hidden="true">
+      <i class="lampu"></i><i class="lampu"></i><i class="lampu"></i><i class="lampu"></i>
+      <i class="lampu"></i><i class="lampu"></i><i class="lampu"></i><i class="lampu"></i>
+      <i class="lampu"></i><i class="lampu"></i>
+    </div>
+
+    <!-- terpal bergaris + papan nama -->
+    <div class="terpal">
+      <div class="papan-nama">TEMBAK HURUF</div>
+    </div>
+
+    <!-- rak hadiah: 26 slot, terlihat di semua layar permainan -->
+    <div id="shelf-wrap">
+      <div id="shelf" role="list" aria-label="Rak hadiah huruf"></div>
+    </div>
+
+    <!-- arena balon -->
+    <div id="arena">
+      <div id="perintah" aria-live="polite"></div>
+      <div id="ukur-balon" aria-hidden="true"></div>
+      <div id="balloons"></div>
+      <div id="fx" aria-hidden="true"></div>
+    </div>
+
+    <!-- meja kayu: peluru & toggle -->
+    <div id="bench">
+      <div id="bench-tools">
+        <button id="btn-bisu" class="tool-btn" type="button" aria-pressed="false" aria-label="Bisu">🔊</button>
+        <button id="btn-musik" class="tool-btn" type="button" aria-pressed="false" aria-label="Musik latar">🎶</button>
+      </div>
+      <div id="ammo" aria-label="Peluru tersisa"></div>
+    </div>
+
+    <!-- senapan angin pasar malam -->
+    <div id="weapon" aria-hidden="true">
+      <div class="w-pivot">
+        <div class="w-recoil">
+          <div class="w-bob">
+            <div class="muzzle">
+              <div class="muzzle-glow"></div>
+              <div class="muzzle-burst"></div>
+              <div class="muzzle-core"></div>
+            </div>
+            <div class="charge-glow"></div>
+            <div class="barrel"></div>
+            <div class="smoke s1"></div>
+            <div class="smoke s2"></div>
+            <div class="smoke s3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- lawan duel -->
+    <div id="beruang" style="display:none" aria-hidden="true">
+      <div class="beruang-balon"></div>
+      <img src="./assets/beruang.svg" alt="" width="200" height="200">
+    </div>
+
+  </div><!-- /#kios -->
+
+  <div id="kios-flash" aria-hidden="true"></div>
+  <div id="fx-top" aria-hidden="true"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ===================== LAYAR: JUDUL ===================== -->
+  <section class="layar" id="layar-judul">
+    <div class="kotak">
+      <div id="logo" role="button" tabindex="0" aria-label="Tembak Huruf. Tahan 3 detik untuk panel orang tua.">TEMBAK<br>HURUF</div>
+      <div id="logo-bar" aria-hidden="true"><span></span></div>
+      <div class="balon-hias" aria-hidden="true">🎈🎈🎈</div>
+      <div class="tombol-baris">
+        <button class="tombol besar" id="btn-mulai" type="button"><span class="ikon">🔫</span> Mulai</button>
+        <button class="tombol mint" id="btn-rak-judul" type="button"><span class="ikon">🧸</span> Rak hadiah</button>
+      </div>
+      <p class="kecil">Untuk orang tua: tahan tulisan besar di atas selama 3 detik.</p>
+    </div>
+  </section>
+
+  <!-- ===================== LAYAR: PILIH MODE ===================== -->
+  <section class="layar" id="layar-mode">
+    <div class="kotak">
+      <h2>Mau main apa?</h2>
+      <div class="mode-grid" id="mode-grid"></div>
+      <div class="tombol-baris">
+        <button class="tombol hantu" data-aksi="judul" type="button">← Kembali</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LAYAR: BERMAIN (kios itu sendiri) ===================== -->
+  <section class="layar" id="layar-bermain" aria-hidden="true"></section>
+
+  <!-- ===================== LAYAR: HASIL RONDE ===================== -->
+  <section class="layar" id="layar-hasil">
+    <div class="kotak">
+      <h1 id="hasil-judul">Selesai!</h1>
+      <div class="bintang-baris" id="hasil-bintang" aria-label="Bintang"></div>
+      <p id="hasil-pesan"></p>
+      <div class="huruf-baru" id="hasil-huruf"></div>
+      <p class="kecil" id="hasil-mode"></p>
+      <div class="tombol-baris">
+        <button class="tombol besar" id="btn-main-lagi" type="button"><span class="ikon">🔁</span> Main lagi</button>
+        <button class="tombol mint" id="btn-rak-hasil" type="button"><span class="ikon">🧸</span> Lihat rak hadiah</button>
+      </div>
+      <div class="tombol-baris">
+        <button class="tombol hantu" data-aksi="pilih-mode" type="button">Ganti mode</button>
+        <button class="tombol hantu" data-aksi="judul" type="button">Judul</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LAYAR: RAK HADIAH ===================== -->
+  <section class="layar" id="layar-rak">
+    <div class="kotak">
+      <h2>Rak Hadiah</h2>
+      <p class="kecil" id="rak-info"></p>
+      <div class="rak-penuh" id="rak-penuh"></div>
+      <h2 style="font-size:clamp(16px,3vh,24px)">Skin Laras</h2>
+      <div class="skin-grid" id="skin-grid"></div>
+      <div class="tombol-baris">
+        <button class="tombol" data-aksi="pilih-mode" type="button"><span class="ikon">🔫</span> Main</button>
+        <button class="tombol hantu" data-aksi="judul" type="button">Judul</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LAYAR: ISTIRAHAT ===================== -->
+  <section class="layar" id="layar-istirahat">
+    <div class="kotak">
+      <div class="emoji-besar" aria-hidden="true">🌙</div>
+      <h1>Istirahat dulu yuk!</h1>
+      <p>Main lagi nanti ya.</p>
+      <div class="tombol-baris">
+        <button class="tombol besar mint" id="btn-istirahat-cukup" type="button">Sudah cukup</button>
+        <button class="tombol krem" id="btn-istirahat-lagi" type="button">Main 1 ronde lagi</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LAYAR: PANEL ORANG TUA ===================== -->
+  <section class="layar" id="layar-ortu">
+    <div class="kotak">
+
+      <div class="gerbang-ortu" id="ortu-gerbang">
+        <h2>Panel Orang Tua</h2>
+        <p>Berapa 7 × 8 ?</p>
+        <form id="ortu-form" autocomplete="off">
+          <input id="ortu-jawab" type="number" inputmode="numeric" aria-label="Jawaban 7 kali 8">
+          <div class="tombol-baris" style="margin-top:12px">
+            <button class="tombol" type="submit">Masuk</button>
+            <button class="tombol hantu" type="button" data-aksi="judul">Kembali</button>
+          </div>
+        </form>
+        <p class="kecil" id="ortu-salah" role="alert"></p>
+      </div>
+
+      <div id="ortu-isi" style="display:none">
+        <div class="ortu-tab" role="tablist">
+          <button class="tombol mint" type="button" role="tab" data-panel="statistik" aria-selected="true">📊 Statistik</button>
+          <button class="tombol krem" type="button" role="tab" data-panel="setelan" aria-selected="false">⚙️ Pengaturan</button>
+          <button class="tombol krem" type="button" role="tab" data-panel="rekam" aria-selected="false">🎙 Rekam suara</button>
+          <button class="tombol krem" type="button" role="tab" data-panel="ekspor" aria-selected="false">⬇️ Ekspor</button>
+        </div>
+
+        <!-- Statistik -->
+        <div class="panel aktif" id="panel-statistik">
+          <div class="setelan" id="ortu-ringkas"></div>
+          <h2 style="font-size:clamp(15px,2.6vh,20px)">Akurasi 7 sesi terakhir</h2>
+          <svg class="grafik" id="grafik-sesi" viewBox="0 0 300 100" role="img" aria-label="Grafik akurasi per sesi"></svg>
+          <h2 style="font-size:clamp(15px,2.6vh,20px)">5 huruf paling sering salah</h2>
+          <ul id="daftar-sulit" style="margin:0;padding-left:20px;font-size:14px;line-height:1.7"></ul>
+          <h2 style="font-size:clamp(15px,2.6vh,20px)">Semua huruf</h2>
+          <div class="stat-scroll">
+            <table class="stat" id="tabel-huruf">
+              <thead><tr><th>Huruf</th><th>Percobaan</th><th>Akurasi</th><th>Rata respons</th><th>Tingkat</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pengaturan -->
+        <div class="panel" id="panel-setelan">
+          <div class="baris-setelan">
+            <span><span class="nama">Suara huruf</span>
+              <span class="ket">Nama huruf ("de") atau bunyi huruf/fonik ("duh")</span></span>
+            <span class="segment">
+              <button class="tombol krem" type="button" data-suara="nama">Nama</button>
+              <button class="tombol krem" type="button" data-suara="bunyi">Bunyi</button>
+            </span>
+          </div>
+          <p class="kecil" id="info-tts"></p>
+
+          <div class="baris-setelan">
+            <span><span class="nama">Tier huruf yang aktif</span>
+              <span class="ket">1: bentuk sama · 2: mirip · 3: berbeda total · 4: pasangan jebakan</span></span>
+            <span class="tier-chips">
+              <button class="chip" type="button" data-tier="1" aria-pressed="true">1</button>
+              <button class="chip" type="button" data-tier="2" aria-pressed="true">2</button>
+              <button class="chip" type="button" data-tier="3" aria-pressed="true">3</button>
+              <button class="chip" type="button" data-tier="4" aria-pressed="true">4</button>
+            </span>
+          </div>
+
+          <div class="baris-setelan">
+            <span><span class="nama">Musik latar</span><span class="ket">Default mati</span></span>
+            <button class="switch" type="button" data-setelan="musik" aria-pressed="false" aria-label="Musik latar"></button>
+          </div>
+          <div class="baris-setelan">
+            <span><span class="nama">Efek getar layar</span><span class="ket">Maksimum 3px</span></span>
+            <button class="switch" type="button" data-setelan="getar" aria-pressed="true" aria-label="Efek getar layar"></button>
+          </div>
+          <div class="baris-setelan">
+            <span><span class="nama">Kurangi gerak</span><span class="ket">Matikan kilat &amp; getar (default: ikut sistem)</span></span>
+            <button class="switch" type="button" data-setelan="reduced_motion" aria-pressed="false" aria-label="Kurangi gerak"></button>
+          </div>
+          <div class="baris-setelan">
+            <span><span class="nama">Pengingat istirahat</span><span class="ket">Setelah 3 ronde berturut-turut</span></span>
+            <button class="switch" type="button" data-setelan="pengingat_istirahat" aria-pressed="true" aria-label="Pengingat istirahat"></button>
+          </div>
+          <div class="baris-setelan">
+            <span><span class="nama">Reset progres</span><span class="ket">Menghapus rak hadiah dan semua statistik</span></span>
+            <button class="tombol merah" type="button" id="ortu-reset">Reset progres</button>
+          </div>
+        </div>
+
+        <!-- Rekam suara -->
+        <div class="panel" id="panel-rekam">
+          <p class="kecil" id="rekam-catatan"></p>
+          <div class="baris-setelan">
+            <span><span class="nama">Ketukan pada huruf</span><span class="ket">Rekam ulang atau dengarkan hasilnya</span></span>
+            <span class="segment">
+              <button class="tombol mint" type="button" data-ketuk="rekam" aria-selected="true">🎙 Rekam</button>
+              <button class="tombol krem" type="button" data-ketuk="dengar" aria-selected="false">▶️ Dengar</button>
+            </span>
+          </div>
+          <div class="rekam-grid" id="rekam-grid"></div>
+          <div class="tombol-baris">
+            <button class="tombol merah" type="button" id="rekam-hapus">Hapus semua rekaman</button>
+          </div>
+          <p class="kecil">Rekaman disimpan di perangkat ini saja (IndexedDB) dan tidak pernah dikirim ke mana pun.</p>
+        </div>
+
+        <!-- Ekspor -->
+        <div class="panel" id="panel-ekspor">
+          <p>Unduh statistik sebagai berkas JSON untuk cadangan atau dibagikan ke guru.</p>
+          <div class="tombol-baris">
+            <button class="tombol" type="button" id="ortu-ekspor"><span class="ikon">⬇️</span> Unduh JSON</button>
+          </div>
+          <p class="kecil">Berkas berisi progres huruf, pengaturan, dan riwayat 30 sesi terakhir. Tidak ada data pribadi.</p>
+        </div>
+
+        <div class="tombol-baris">
+          <button class="tombol hantu" type="button" id="btn-ortu-keluar">← Keluar dari panel</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div><!-- /#app -->
+
+<script type="module" src="./scripts/main.js"></script>
+</body>
+</html>

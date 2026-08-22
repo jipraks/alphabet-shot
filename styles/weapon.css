@@ -1,0 +1,335 @@
+/* ============================================================
+   Tembak Huruf — senjata
+   Bagian paling menentukan rasa main. Semua animasi hanya
+   transform + opacity. Elemen letusan permanen (tidak dibuat
+   ulang tiap tembakan), cukup toggle class .firing.
+
+   Susunan layer (belakang → depan):
+     1 tracer (di #fx)  2 glow  3 burst  4 core
+     5 barrel  6 smoke  7 shell (di #fx-top)
+   ============================================================ */
+
+#weapon {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: max(22vw, 33vmin);      /* ~22% lebar layar, dijaga tetap besar di portrait */
+  height: max(24vh, 26vmin);     /* spek: ~18% — dinaikkan karena meja menutupi
+                                    sebagian laras; lihat catatan di README */
+  margin-left: calc(max(22vw, 33vmin) / -2);
+  z-index: var(--z-barrel);
+  pointer-events: none;
+}
+
+/* Pivot di bawah viewport supaya rotasi terasa natural */
+.w-pivot {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 260%;
+  transform: rotate(var(--aim, 0deg));
+  transition: transform var(--t-aim) var(--ease-aim);
+  will-change: transform;
+}
+
+.w-recoil {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+/* Idle bobbing 3px / 2,4s — tanpa ini layar terasa mati */
+.w-bob {
+  position: absolute;
+  inset: 0;
+  animation: bob 2400ms ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes bob {
+  from { transform: translateY(0); }
+  to   { transform: translateY(3px); }
+}
+
+.barrel {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  filter: drop-shadow(0 -4px 10px rgba(0, 0, 0, 0.5));
+}
+.barrel svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- Moncong: titik jangkar semua efek letusan ---------- */
+.muzzle {
+  position: absolute;
+  left: 50%;
+  top: 2%;               /* ujung laras */
+  width: 0; height: 0;
+}
+
+.muzzle-glow, .muzzle-burst, .muzzle-core {
+  position: absolute;
+  left: 0; top: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+  transform: translate(-50%, -50%);
+}
+
+/* 2. glow — box-shadow statis, hanya opacity/scale yang dianimasikan */
+.muzzle-glow {
+  z-index: 2;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 140, 26, 0.9);
+  box-shadow: 0 0 80px 30px rgba(255, 140, 26, 0.75);
+}
+
+/* 3. burst — semburan oranye */
+.muzzle-burst {
+  z-index: 3;
+  width: clamp(70px, 15vmin, 130px);
+  height: clamp(70px, 15vmin, 130px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 55%,
+      #FFF6D8 0%, var(--lampu) 32%, var(--api) 62%, rgba(255, 107, 26, 0) 78%);
+}
+
+/* 4. core — inti putih bintang 6 sudut */
+.muzzle-core {
+  z-index: 4;
+  width: clamp(56px, 12vmin, 104px);
+  height: clamp(56px, 12vmin, 104px);
+  background: #FFFFFF;
+  clip-path: polygon(
+    50% 0%, 61% 34%, 97% 25%, 72% 52%, 97% 75%,
+    61% 66%, 50% 100%, 39% 66%, 3% 75%, 28% 52%, 3% 25%, 39% 34%);
+}
+
+/* 6. smoke — di atas laras, naik */
+.smoke {
+  position: absolute;
+  left: 50%; top: 2%;
+  z-index: 6;
+  width: clamp(26px, 5vmin, 44px);
+  height: clamp(26px, 5vmin, 44px);
+  margin: calc(clamp(26px, 5vmin, 44px) / -2);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.55), rgba(190,190,200,0) 70%);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.smoke.s2 { margin-left: calc(clamp(26px, 5vmin, 44px) / -2 + 8px); }
+.smoke.s3 { margin-left: calc(clamp(26px, 5vmin, 44px) / -2 - 9px); }
+
+/* ---------- Letusan: satu class, semua layer ---------- */
+#weapon.firing .muzzle-core  { animation: flash-core  30ms  linear; }
+#weapon.firing .muzzle-burst { animation: flash-burst 50ms  30ms ease-out; }
+#weapon.firing .muzzle-glow  { animation: flash-glow  100ms linear; }
+#weapon.firing .smoke.s1     { animation: puff 600ms 80ms  ease-out; }
+#weapon.firing .smoke.s2     { animation: puff 600ms 140ms ease-out; }
+#weapon.firing .smoke.s3     { animation: puff 600ms 200ms ease-out; }
+
+@keyframes flash-core {
+  0%   { opacity: 1;   transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
+  100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.2) rotate(22deg); }
+}
+@keyframes flash-burst {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.6); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+}
+@keyframes flash-glow {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
+}
+@keyframes puff {
+  0%   { opacity: 0.5; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0;   transform: translate(0, -40px) scale(2.2); }
+}
+
+/* ---------- Recoil: sentak 60ms, balik 150ms (spring) ---------- */
+#weapon.recoil .w-recoil { animation: recoil var(--t-recoil) both; }
+@keyframes recoil {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    animation-timing-function: cubic-bezier(0.25, 0.9, 0.4, 1);
+  }
+  28.57% {   /* 60ms dari 210ms */
+    transform: translateY(14px) rotate(var(--rk, 6deg)) scale(0.98);
+    animation-timing-function: cubic-bezier(0.22, 1.4, 0.36, 1);
+  }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+/* ---------- Reload: kokang mundur-maju 800ms ---------- */
+#weapon.reloading .w-recoil { animation: kokang var(--t-reload) ease-in-out; }
+@keyframes kokang {
+  0%   { transform: translateY(0) rotate(0deg); }
+  22%  { transform: translateY(20px) rotate(-3deg); }
+  46%  { transform: translateY(22px) rotate(-3deg); }
+  74%  { transform: translateY(-4px) rotate(1deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* ---------- Charge shot: laras menyala biru bertahap ---------- */
+.charge-glow {
+  position: absolute;
+  left: 50%; top: 6%;
+  width: clamp(60px, 13vmin, 120px);
+  height: clamp(60px, 13vmin, 120px);
+  margin: calc(clamp(60px, 13vmin, 120px) / -2);
+  z-index: 4;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 200, 255, 0.95) 0%, rgba(70, 140, 255, 0) 70%);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+#weapon.charging .charge-glow { animation: charge 1000ms linear forwards; }
+#weapon.charged .charge-glow  { animation: charged-pulse 500ms ease-in-out infinite alternate; }
+@keyframes charge {
+  0%   { opacity: 0;    transform: scale(0.4); }
+  100% { opacity: 0.95; transform: scale(1.25); }
+}
+@keyframes charged-pulse {
+  from { opacity: 0.75; transform: scale(1.15); }
+  to   { opacity: 1;    transform: scale(1.35); }
+}
+
+/* ---------- Peluru terbang, tracer, selongsong (dibuat dari pool) ---------- */
+.bullet {
+  position: absolute;
+  width: 14px; height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #FFFFFF 0 30%, var(--lampu) 55%, rgba(255,201,60,0) 75%);
+  will-change: transform, opacity;
+  opacity: 0;
+}
+.tracer {
+  position: absolute;
+  height: 3px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, rgba(255,244,220,0.95), rgba(255,201,60,0));
+  will-change: opacity;
+  opacity: 0;
+  z-index: 1;
+}
+.shell {
+  position: absolute;
+  width: 9px; height: 20px;
+  margin: -10px 0 0 -4px;
+  border-radius: 40% 40% 20% 20%;
+  background: linear-gradient(180deg, var(--kuningan), #8A6318);
+  will-change: transform, opacity;
+  opacity: 0;
+}
+
+/* ---------- Confetti ---------- */
+.confetti {
+  position: absolute;
+  width: 12px; height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 3px;
+  background: var(--warna, var(--mint));
+  will-change: transform, opacity;
+  opacity: 0;
+}
+
+/* ---------- Huruf terbang ke rak ---------- */
+.huruf-terbang {
+  position: fixed;
+  font-family: var(--font-huruf);
+  font-weight: 700;
+  font-size: var(--huruf-balon);
+  line-height: 1;
+  color: var(--malam);
+  background: var(--warna, var(--mint));
+  border-radius: 10px;
+  padding: 0.02em 0.16em 0.08em;
+  will-change: transform, opacity;
+  z-index: var(--z-shell);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+#fx-top {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-shell);
+}
+
+/* ---------- Beruang duel ---------- */
+#beruang {
+  position: absolute;
+  right: clamp(6px, 3vw, 40px);
+  bottom: 0;
+  width: clamp(90px, 17vmin, 170px);
+  z-index: calc(var(--z-bench) + 1);
+  pointer-events: none;
+  transition: transform 180ms var(--ease-spring);
+}
+#beruang svg { width: 100%; height: auto; display: block; }
+#beruang.nembak { transform: translateY(6px) rotate(-3deg); }
+#beruang.tepuk  { animation: tepuk 420ms ease-in-out 3; }
+#beruang.meleset { animation: meleset 600ms ease-in-out; }
+@keyframes tepuk {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-10px) rotate(4deg); }
+}
+@keyframes meleset {
+  0%, 100% { transform: rotate(0deg); }
+  30%      { transform: rotate(-8deg) translateY(6px); }
+  70%      { transform: rotate(6deg) translateY(4px); }
+}
+.beruang-balon {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  font-family: var(--font-ui);
+  font-size: clamp(11px, 2vh, 15px);
+  background: var(--terpal-krem);
+  color: var(--malam);
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.beruang-balon.tampil { opacity: 1; }
+
+/* ---------- Pemain kedua (dua pemain satu layar) ---------- */
+#weapon.p2 { left: 78%; }
+#weapon.p1-duo { left: 22%; }
+
+/* ============================================================
+   Kurangi gerak — dipasang lewat class dari JS
+   (mengikuti prefers-reduced-motion atau pengaturan orang tua).
+   Game harus tetap sepenuhnya bisa dimainkan.
+   ============================================================ */
+body.kurangi-gerak #kios.getar { animation: none; }
+body.kurangi-gerak #kios-flash.on { animation: kios-lembut 220ms ease-out; }
+@keyframes kios-lembut {
+  0%   { opacity: 0.35; }
+  100% { opacity: 0; }
+}
+/* Tanpa kilat tajam: core dimatikan, burst jadi pendar lembut */
+body.kurangi-gerak #weapon.firing .muzzle-core { animation: none; }
+body.kurangi-gerak #weapon.firing .muzzle-burst { animation: pendar 260ms ease-out; }
+body.kurangi-gerak #weapon.firing .muzzle-glow { animation: pendar 260ms ease-out; }
+@keyframes pendar {
+  0%   { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0;    transform: translate(-50%, -50%) scale(1.1); }
+}
+/* Recoil tetap ada, amplitudo setengah */
+body.kurangi-gerak #weapon.recoil .w-recoil { animation: recoil-halus var(--t-recoil) both; }
+@keyframes recoil-halus {
+  0%     { transform: translateY(0) rotate(0deg) scale(1); }
+  28.57% { transform: translateY(7px) rotate(calc(var(--rk, 6deg) / 2)) scale(0.99);
+           animation-timing-function: var(--ease-spring); }
+  100%   { transform: translateY(0) rotate(0deg) scale(1); }
+}
+body.kurangi-gerak .w-bob { animation: none; }
+body.kurangi-gerak .balon.denyut .karet { animation-duration: 2400ms; }
+
+/* Cadangan kalau JS belum sempat memasang class */
+@media (prefers-reduced-motion: reduce) {
+  #kios.getar { animation: none; }
+  .w-bob { animation: none; }
+}

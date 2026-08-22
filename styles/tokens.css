@@ -1,0 +1,107 @@
+/* ============================================================
+   Tembak Huruf — design tokens
+   Satu-satunya tempat warna, font, timing, dan ukuran dasar.
+   Ubah di sini, jangan di file lain.
+   ============================================================ */
+
+/* ---------- Font (self-host, subset latin, nol request CDN) ---------- */
+@font-face {
+  font-family: 'Andika';
+  src: url('../fonts/Andika-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Andika';
+  src: url('../fonts/Andika-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bungee';
+  src: url('../fonts/Bungee-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend-VariableFont.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ---------- Warna ---------- */
+  --malam:        #16173A;  /* langit malam, background utama */
+  --terpal-merah: #D93A3A;  /* garis terpal, aksen utama */
+  --terpal-krem:  #FFF4DC;  /* garis terpal terang, teks di atas gelap */
+  --lampu:        #FFC93C;  /* bohlam, glow, highlight */
+  --kayu:         #6B4226;  /* meja & laras */
+  --mint:         #43C6B7;  /* balon netral, tombol aman */
+
+  /* Turunan (dipakai untuk kedalaman kios) */
+  --malam-terang: #23255A;
+  --malam-gelap:  #0D0E26;
+  --kayu-terang:  #8C5A33;
+  --kayu-gelap:   #4A2D19;
+  --kuningan:     #E0B04A;
+  --api:          #FF8C1A;
+
+  /* Warna balon (rotasi, tanpa merah — bentrok dengan terpal) */
+  --balon-1: #43C6B7;
+  --balon-2: #F5A524;
+  --balon-3: #8B7FD4;
+  --balon-4: #4FA3E3;
+  --balon-5: #E8739F;
+
+  /* ---------- Tipografi ---------- */
+  /* Huruf yang diajarkan: HANYA Andika. Jangan tambahkan Arial/Helvetica
+     ke stack ini — bentuk a dan g-nya berbeda dari yang diajarkan di TK. */
+  --font-huruf: 'Andika', 'Comic Sans MS', cursive;
+  --font-papan: 'Bungee', 'Arial Black', system-ui, sans-serif;
+  --font-ui:    'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* ---------- Ukuran ---------- */
+  --balon-size: clamp(80px, 15vmin, 116px);   /* min 80px (spek), ideal ~100 */
+  --balon-gap: 24px;                          /* jarak minimal antar balon */
+  --aim-assist: 40px;                         /* radius bantu tap */
+  --huruf-balon: clamp(48px, 9.5vmin, 72px);  /* min 48px (spek), ideal 64 */
+  --tap-game: 80px;                           /* target sentuh area game */
+  --tap-menu: 44px;                           /* target sentuh menu */
+  --shelf-slot: clamp(30px, 5.4vmin, 44px);
+
+  /* ---------- Timing ---------- */
+  --t-aim: 120ms;
+  --t-recoil: 210ms;
+  --t-flash: 120ms;
+  --t-bullet: 250ms;
+  --t-cooldown: 250ms;   /* HARD LIMIT — juga penjaga fotosensitivitas < 4Hz */
+  --t-reload: 800ms;
+  --ease-aim: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --ease-spring: cubic-bezier(0.22, 1.4, 0.36, 1);
+
+  /* ---------- Layer (z-index) ---------- */
+  --z-kios: 1;
+  --z-balon: 20;
+  --z-perintah: 30;
+  --z-tracer: 41;        /* 1. tracer */
+  --z-muzzle-glow: 42;   /* 2. muzzle-glow */
+  --z-muzzle-burst: 43;  /* 3. muzzle-burst */
+  --z-muzzle-core: 44;   /* 4. muzzle-core */
+  --z-barrel: 45;        /* 5. barrel */
+  --z-smoke: 46;         /* 6. smoke */
+  --z-shell: 47;         /* 7. shell */
+  --z-bench: 40;   /* di bawah laras: senapan dipegang di depan meja */
+  --z-overlay: 80;
+  --z-screen: 90;
+
+  /* ---------- Radius & bayangan ---------- */
+  --r-sm: 10px;
+  --r-md: 18px;
+  --r-lg: 28px;
+  --shadow-panel: 0 18px 44px rgba(0, 0, 0, 0.45);
+}

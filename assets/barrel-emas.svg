@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Laras emas">
+  <defs>
+    <linearGradient id="emas-body" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFE9A8"/>
+      <stop offset=".42" stop-color="#E0B04A"/>
+      <stop offset="1" stop-color="#A8791F"/>
+    </linearGradient>
+    <linearGradient id="emas-metal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFF6D8"/>
+      <stop offset=".5" stop-color="#FFD75E"/>
+      <stop offset="1" stop-color="#FFF6D8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- laras utama, perspektif 3/4: sempit di ujung jauh, lebar di dekat pemain -->
+  <path d="M80 30 L120 30 L149 160 L59 160 Z" fill="url(#emas-body)"/>
+  <!-- garis sorot kiri (arah lampu kios) -->
+  <path d="M80 30 L88 30 L104 160 L88 160 Z" fill="#FFF4DC" opacity=".16"/>
+  <!-- bayangan kanan -->
+  <path d="M116 30 L120 30 L149 160 L136 160 Z" fill="#000" opacity=".22"/>
+
+  <!-- moncong kuningan lebar -->
+  <path d="M68 8 L132 8 L128 36 L72 36 Z" fill="url(#emas-metal)"/>
+  <ellipse cx="100" cy="11" rx="30" ry="6" fill="#FFD75E"/>
+  <ellipse cx="100" cy="11" rx="15" ry="4" fill="#1B1206"/>
+  <rect x="70" y="30" width="60" height="5" rx="2" fill="#000" opacity=".22"/>
+
+  <!-- pita warna-warni terikat di laras -->
+  <path d="M84 74 q-19 9 -25 25 q13 -5 21 -16 z" fill="#D93A3A"/>
+  <path d="M116 74 q19 9 25 25 q-13 -5 -21 -16 z" fill="#FFF4DC"/>
+  <rect x="82" y="68" width="36" height="9" rx="4" fill="#D93A3A"/>
+  <rect x="82" y="68" width="18" height="9" rx="4" fill="#FFF4DC"/>
+
+  <!-- badan dekat pemain + pelatuk -->
+  <path d="M62 132 L138 132 L149 160 L59 160 Z" fill="#000" opacity=".18"/>
+  <rect x="86" y="120" width="28" height="12" rx="5" fill="url(#emas-metal)" opacity=".9"/>
+  <path d="M86 44 L94 60 L86 76 L78 60 Z" fill="#FFF6D8" opacity=".9"/>
+  <path d="M114 84 L120 96 L114 108 L108 96 Z" fill="#FFF6D8" opacity=".75"/>
+  <circle cx="100" cy="112" r="6" fill="#FFF6D8" opacity=".8"/>
+</svg>

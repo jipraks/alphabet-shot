@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Beruang lawan main">
+  <defs>
+    <linearGradient id="bulu" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#B9834B"/>
+      <stop offset="1" stop-color="#8A5C30"/>
+    </linearGradient>
+  </defs>
+  <!-- badan -->
+  <path d="M56 200 q0 -60 44 -60 q44 0 44 60 z" fill="url(#bulu)"/>
+  <!-- kaus + pita sportif -->
+  <path d="M70 200 q2 -40 30 -40 q28 0 30 40 z" fill="#43C6B7"/>
+  <path d="M88 156 l12 8 l12 -8 l-6 14 l-12 0 z" fill="#D93A3A"/>
+  <!-- telinga -->
+  <circle cx="70" cy="66" r="16" fill="url(#bulu)"/>
+  <circle cx="130" cy="66" r="16" fill="url(#bulu)"/>
+  <circle cx="70" cy="66" r="8" fill="#E8B98A"/>
+  <circle cx="130" cy="66" r="8" fill="#E8B98A"/>
+  <!-- kepala -->
+  <circle cx="100" cy="98" r="42" fill="url(#bulu)"/>
+  <!-- moncong -->
+  <ellipse cx="100" cy="112" rx="24" ry="18" fill="#F0D3AE"/>
+  <path d="M92 104 h16 l-8 8 z" fill="#3B2412"/>
+  <path d="M100 112 v6 M100 118 q-7 6 -12 0 M100 118 q7 6 12 0" stroke="#3B2412" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- mata ramah -->
+  <circle cx="85" cy="90" r="6" fill="#16173A"/>
+  <circle cx="115" cy="90" r="6" fill="#16173A"/>
+  <circle cx="87" cy="88" r="2.2" fill="#FFF4DC"/>
+  <circle cx="117" cy="88" r="2.2" fill="#FFF4DC"/>
+  <!-- senapan mainan kecil, diarahkan ke atas-kiri -->
+  <g transform="rotate(-24 100 160)">
+    <rect x="46" y="150" width="86" height="12" rx="5" fill="#6B4226"/>
+    <rect x="120" y="146" width="26" height="20" rx="6" fill="#E0B04A"/>
+    <rect x="60" y="162" width="20" height="16" rx="5" fill="#4A2D19"/>
+  </g>
+  <!-- tangan -->
+  <circle cx="66" cy="168" r="14" fill="#A9743F"/>
+  <circle cx="134" cy="156" r="14" fill="#A9743F"/>
+</svg>
