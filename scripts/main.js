@@ -53,6 +53,7 @@ function setState(baru) {
   if (baru !== 'BERMAIN') {
     ui.perintahSembunyi();
     ctx?.field.bersihkan();
+    ctx?.field.hentikan();      // jangan biarkan loop rAF jalan di layar menu
   }
 }
 
@@ -122,6 +123,7 @@ async function mulaiRonde(modeId) {
 
 function bukaRak(perayaan = false) {
   ui.rakPenuhRender();
+  ui.skinRender((id) => ctx?.weapon.setSkin(id));
   setState('RAK_HADIAH');
   if (perayaan) {
     audio.fanfare();

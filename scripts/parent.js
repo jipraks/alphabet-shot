@@ -175,8 +175,10 @@ class PanelOrtu {
     const svg = document.getElementById('grafik-sesi');
     if (!svg) return;
     const data = stats.grafikSesi(7);
-    const W = 300;
-    const H = 100;
+    // viewBox = ukuran piksel sebenarnya: batang mengisi lebar penuh dan teks
+    // tidak ikut melar (SVG dengan viewBox tetap akan diperkecil & dipusatkan).
+    const W = Math.max(200, Math.round(svg.clientWidth || 300));
+    const H = Math.max(80, Math.round(svg.clientHeight || 100));
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     if (!data.length) {
       svg.innerHTML = `<text x="8" y="${H / 2}">Belum ada sesi tercatat.</text>`;
@@ -184,7 +186,7 @@ class PanelOrtu {
     }
     const lebar = W / data.length;
     const bar = data.map((d, i) => {
-      const h = Math.max(2, d.akurasi * (H - 26));
+      const h = Math.max(2, d.akurasi * (H - 34));
       const x = i * lebar + lebar * 0.18;
       const w = lebar * 0.64;
       const y = H - 18 - h;

@@ -51,12 +51,16 @@
   --kuningan:     #E0B04A;
   --api:          #FF8C1A;
 
-  /* Warna balon (rotasi, tanpa merah — bentrok dengan terpal) */
-  --balon-1: #43C6B7;
-  --balon-2: #F5A524;
-  --balon-3: #8B7FD4;
-  --balon-4: #4FA3E3;
-  --balon-5: #E8739F;
+  /* Warna balon (rotasi, tanpa merah — bentrok dengan terpal).
+     Tiga warna dicerahkan dari nilai spek supaya huruf --malam di atasnya
+     benar-benar mencapai kontras 7:1 (syarat spek untuk huruf yang
+     diajarkan). Nilai spek: #8B7FD4 = 5,00:1 · #4FA3E3 = 6,31:1 ·
+     #E8739F = 6,06:1 — semuanya di bawah 7:1. */
+  --balon-1: #43C6B7;  /*  8,21:1 */
+  --balon-2: #F5A524;  /*  8,45:1 */
+  --balon-3: #A79EDE;  /*  7,05:1 (spek #8B7FD4 dicerahkan 24% ke putih) */
+  --balon-4: #62ADE6;  /*  7,09:1 (spek #4FA3E3 dicerahkan 11% ke putih) */
+  --balon-5: #EB87AC;  /*  7,06:1 (spek #E8739F dicerahkan 14% ke putih) */
 
   /* ---------- Tipografi ---------- */
   /* Huruf yang diajarkan: HANYA Andika. Jangan tambahkan Arial/Helvetica

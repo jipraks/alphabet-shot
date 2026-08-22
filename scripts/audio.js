@@ -239,15 +239,15 @@ class AudioKios {
     setTimeout(() => this._osc('square', 400, 0.03, 0.2), 120);
   }
 
-  /** Charge: sawtooth naik 200→800Hz selama 1 detik. */
-  charge() {
+  /** Charge: sawtooth naik 200→800Hz selama 1 detik (atau sisa waktu charge). */
+  charge(detik = 1) {
     if (!this.siap) return null;
     const t = this._t();
     const o = this.ctx.createOscillator();
     const g = this.ctx.createGain();
     o.type = 'sawtooth';
-    o.frequency.setValueAtTime(200, t);
-    o.frequency.linearRampToValueAtTime(800, t + 1);
+    o.frequency.setValueAtTime(200 + (1 - detik) * 600, t);
+    o.frequency.linearRampToValueAtTime(800, t + Math.max(0.05, detik));
     g.gain.setValueAtTime(0.0001, t);
     g.gain.linearRampToValueAtTime(0.16, t + 0.15);
     o.connect(g).connect(this.sfx);

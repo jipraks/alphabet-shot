@@ -9,14 +9,20 @@
      5 barrel  6 smoke  7 shell (di #fx-top)
    ============================================================ */
 
-#weapon {
+/* Selektor class, bukan id: laras pemain 2 adalah kloning dengan id lain,
+   dan harus mendapat SEMUA aturan ini (termasuk letusan). */
+.weapon {
+  /* Kotak laras HARUS beraspek sama dengan viewBox sprite (200x160 = 1,25),
+     supaya sprite mengisi kotak penuh dan titik moncong (.muzzle) benar-benar
+     jatuh di ujung laras. Kalau tidak, letusan lepas dari moncong di portrait. */
+  --bh: clamp(120px, 26vmin, 260px);
+  --bw: calc(var(--bh) * 1.25);
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: max(22vw, 33vmin);      /* ~22% lebar layar, dijaga tetap besar di portrait */
-  height: max(24vh, 26vmin);     /* spek: ~18% — dinaikkan karena meja menutupi
-                                    sebagian laras; lihat catatan di README */
-  margin-left: calc(max(22vw, 33vmin) / -2);
+  width: var(--bw);
+  height: var(--bh);
+  margin-left: calc(var(--bw) / -2);
   z-index: var(--z-barrel);
   pointer-events: none;
 }
@@ -61,7 +67,7 @@
 .muzzle {
   position: absolute;
   left: 50%;
-  top: 2%;               /* ujung laras */
+  top: 7%;               /* lubang laras: y=11 dari viewBox 160 */
   width: 0; height: 0;
 }
 
@@ -106,7 +112,7 @@
 /* 6. smoke — di atas laras, naik */
 .smoke {
   position: absolute;
-  left: 50%; top: 2%;
+  left: 50%; top: 7%;
   z-index: 6;
   width: clamp(26px, 5vmin, 44px);
   height: clamp(26px, 5vmin, 44px);
@@ -120,12 +126,12 @@
 .smoke.s3 { margin-left: calc(clamp(26px, 5vmin, 44px) / -2 - 9px); }
 
 /* ---------- Letusan: satu class, semua layer ---------- */
-#weapon.firing .muzzle-core  { animation: flash-core  30ms  linear; }
-#weapon.firing .muzzle-burst { animation: flash-burst 50ms  30ms ease-out; }
-#weapon.firing .muzzle-glow  { animation: flash-glow  100ms linear; }
-#weapon.firing .smoke.s1     { animation: puff 600ms 80ms  ease-out; }
-#weapon.firing .smoke.s2     { animation: puff 600ms 140ms ease-out; }
-#weapon.firing .smoke.s3     { animation: puff 600ms 200ms ease-out; }
+.weapon.firing .muzzle-core  { animation: flash-core  30ms  linear; }
+.weapon.firing .muzzle-burst { animation: flash-burst 50ms  30ms ease-out; }
+.weapon.firing .muzzle-glow  { animation: flash-glow  100ms linear; }
+.weapon.firing .smoke.s1     { animation: puff 600ms 80ms  ease-out; }
+.weapon.firing .smoke.s2     { animation: puff 600ms 140ms ease-out; }
+.weapon.firing .smoke.s3     { animation: puff 600ms 200ms ease-out; }
 
 @keyframes flash-core {
   0%   { opacity: 1;   transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
@@ -145,7 +151,7 @@
 }
 
 /* ---------- Recoil: sentak 60ms, balik 150ms (spring) ---------- */
-#weapon.recoil .w-recoil { animation: recoil var(--t-recoil) both; }
+.weapon.recoil .w-recoil { animation: recoil var(--t-recoil) both; }
 @keyframes recoil {
   0% {
     transform: translateY(0) rotate(0deg) scale(1);
@@ -159,7 +165,7 @@
 }
 
 /* ---------- Reload: kokang mundur-maju 800ms ---------- */
-#weapon.reloading .w-recoil { animation: kokang var(--t-reload) ease-in-out; }
+.weapon.reloading .w-recoil { animation: kokang var(--t-reload) ease-in-out; }
 @keyframes kokang {
   0%   { transform: translateY(0) rotate(0deg); }
   22%  { transform: translateY(20px) rotate(-3deg); }
@@ -171,7 +177,7 @@
 /* ---------- Charge shot: laras menyala biru bertahap ---------- */
 .charge-glow {
   position: absolute;
-  left: 50%; top: 6%;
+  left: 50%; top: 9%;
   width: clamp(60px, 13vmin, 120px);
   height: clamp(60px, 13vmin, 120px);
   margin: calc(clamp(60px, 13vmin, 120px) / -2);
@@ -181,8 +187,8 @@
   opacity: 0;
   will-change: transform, opacity;
 }
-#weapon.charging .charge-glow { animation: charge 1000ms linear forwards; }
-#weapon.charged .charge-glow  { animation: charged-pulse 500ms ease-in-out infinite alternate; }
+.weapon.charging .charge-glow { animation: charge var(--t-charge, 1000ms) linear forwards; }
+.weapon.charged .charge-glow  { animation: charged-pulse 500ms ease-in-out infinite alternate; }
 @keyframes charge {
   0%   { opacity: 0;    transform: scale(0.4); }
   100% { opacity: 0.95; transform: scale(1.25); }
@@ -295,8 +301,12 @@
 .beruang-balon.tampil { opacity: 1; }
 
 /* ---------- Pemain kedua (dua pemain satu layar) ---------- */
-#weapon.p2 { left: 78%; }
-#weapon.p1-duo { left: 22%; }
+.weapon.p2 { left: 78%; }
+.weapon.p1-duo { left: 22%; }
+/* Warna berbeda untuk pemain 2 — hanya sprite yang bergeser warna,
+   geometri dan timing recoil tetap persis sama. */
+.weapon.p2 .barrel { filter: drop-shadow(0 -4px 10px rgba(0,0,0,.5)) hue-rotate(150deg) saturate(1.15); }
+.weapon.p2 .muzzle-burst { filter: hue-rotate(150deg); }
 
 /* ============================================================
    Kurangi gerak — dipasang lewat class dari JS
@@ -310,15 +320,15 @@ body.kurangi-gerak #kios-flash.on { animation: kios-lembut 220ms ease-out; }
   100% { opacity: 0; }
 }
 /* Tanpa kilat tajam: core dimatikan, burst jadi pendar lembut */
-body.kurangi-gerak #weapon.firing .muzzle-core { animation: none; }
-body.kurangi-gerak #weapon.firing .muzzle-burst { animation: pendar 260ms ease-out; }
-body.kurangi-gerak #weapon.firing .muzzle-glow { animation: pendar 260ms ease-out; }
+body.kurangi-gerak .weapon.firing .muzzle-core { animation: none; }
+body.kurangi-gerak .weapon.firing .muzzle-burst { animation: pendar 260ms ease-out; }
+body.kurangi-gerak .weapon.firing .muzzle-glow { animation: pendar 260ms ease-out; }
 @keyframes pendar {
   0%   { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
   100% { opacity: 0;    transform: translate(-50%, -50%) scale(1.1); }
 }
 /* Recoil tetap ada, amplitudo setengah */
-body.kurangi-gerak #weapon.recoil .w-recoil { animation: recoil-halus var(--t-recoil) both; }
+body.kurangi-gerak .weapon.recoil .w-recoil { animation: recoil-halus var(--t-recoil) both; }
 @keyframes recoil-halus {
   0%     { transform: translateY(0) rotate(0deg) scale(1); }
   28.57% { transform: translateY(7px) rotate(calc(var(--rk, 6deg) / 2)) scale(0.99);

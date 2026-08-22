@@ -61,18 +61,68 @@ export class BalloonField {
 
   get lebarBalon() { return this.ukuran.w; }
 
+  /**
+   * Berapa balon yang benar-benar muat tanpa tumpang tindih.
+   * Dipakai untuk menjepit jumlah balon di layar kecil: balon minimal 80px
+   * dan jarak 24px tidak boleh dikompromikan (aim assist harus jelas).
+   */
+  kapasitas() {
+    const w = this.ukuran.w;
+    const h = this.ukuran.h;
+    const gap = this.gap || 24;
+    const kolom = Math.floor(this.rect.w / (w + gap));
+    const baris = Math.floor((this.rect.h - this.amanAtas) / (h + 8));
+    return Math.max(3, kolom * Math.max(1, baris));
+  }
+
   /* ---------- Spawn ---------- */
   /**
    * @param {Array<{huruf:string, benar:boolean, bos?:boolean}>} daftar
    */
   spawn(daftar) {
     this.bersihkan();
-    daftar.forEach((d, i) => this.tambah(d, i));
+    const slot = this._slotGrid(daftar.length, daftar.some((d) => d.bos));
+    daftar.forEach((d, i) => this.tambah(d, i, slot[i]));
     this.mulai();
     return this.balon;
   }
 
-  tambah(d, urutan = this.balon.length) {
+  /**
+   * Bagi area jadi petak lalu beri jitter di dalam petak. Ini menjamin balon
+   * tidak tumpang tindih selama petaknya cukup — rejection sampling acak gagal
+   * di layar kecil (mis. HP landscape) yang nyaris penuh.
+   */
+  _slotGrid(n, adaBos = false) {
+    const w = this.ukuran.w;
+    const h = this.ukuran.h;
+    const atas = this.amanAtas;
+    const W = Math.max(w, this.rect.w);
+    const H = Math.max(h, this.rect.h - atas);
+    if (adaBos) return new Array(n).fill(null);
+    const kolom = Math.max(1, Math.min(n, Math.round(Math.sqrt((n * W) / Math.max(1, H)))));
+    const baris = Math.ceil(n / kolom);
+    const cw = W / kolom;
+    const ch = H / baris;
+    const petak = [];
+    for (let r = 0; r < baris; r += 1) {
+      for (let c = 0; c < kolom; c += 1) petak.push({ c, r });
+    }
+    // kocok petak supaya balon benar tidak selalu di tempat yang sama
+    for (let i = petak.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [petak[i], petak[j]] = [petak[j], petak[i]];
+    }
+    return petak.slice(0, n).map(({ c, r }) => {
+      const jitterX = Math.max(0, cw - w);
+      const jitterY = Math.max(0, ch - h);
+      return {
+        x: Math.min(Math.max(0, this.rect.w - w), c * cw + rnd(0, jitterX)),
+        y: Math.min(Math.max(atas, atas + this.rect.h - atas - h), atas + r * ch + rnd(0, jitterY)),
+      };
+    });
+  }
+
+  tambah(d, urutan = this.balon.length, posisi = null) {
     const el = document.createElement('button');
     el.className = 'balon' + (d.bos ? ' bos' : '');
     el.type = 'button';
@@ -86,7 +136,7 @@ export class BalloonField {
     const besar = d.bos ? 2.1 : 1;
     const w = this.ukuran.w * besar;
     const h = this.ukuran.h * besar;
-    const pos = this._cariTempat(w, h, d.bos);
+    const pos = posisi || this._cariTempat(w, h, d.bos);
     const sudut = rnd(0, Math.PI * 2);
     const v = rnd(V_MIN, V_MAKS);
 
@@ -124,19 +174,34 @@ export class BalloonField {
     const maksY = Math.max(atas, this.rect.h - h);
     if (tengah) return { x: maksX / 2, y: atas + (maksY - atas) / 2 };
     const gapCSS = this.gap || 24;
+    const jarakKe = (x, y) => {
+      let min = Infinity;
+      this.balon.forEach((b) => {
+        if (!b.hidup) return;
+        const d = Math.hypot((b.x + b.w / 2) - (x + w / 2), (b.y + b.w / 2) - (y + w / 2));
+        if (d < min) min = d;
+      });
+      return min;
+    };
+    // Longgarkan jarak bertahap, tapi JANGAN pernah sampai balon tumpang tindih
+    // (aim assist 40px harus tetap jelas milik satu balon).
     for (let relax = 0; relax < 4; relax += 1) {
-      const minJarak = (w + gapCSS) * (1 - relax * 0.18);
-      for (let coba = 0; coba < 90; coba += 1) {
+      const minJarak = w + Math.max(6, gapCSS - relax * 6);
+      for (let coba = 0; coba < 70; coba += 1) {
         const x = rnd(0, maksX);
         const y = rnd(atas, maksY);
-        const bentrok = this.balon.some((b) => {
-          if (!b.hidup) return false;
-          return Math.hypot((b.x + b.w / 2) - (x + w / 2), (b.y + b.h / 2) - (y + h / 2)) < minJarak;
-        });
-        if (!bentrok) return { x, y };
+        if (jarakKe(x, y) >= minJarak) return { x, y };
       }
     }
-    return { x: rnd(0, maksX), y: rnd(atas, maksY) };
+    // Cadangan: ambil kandidat paling lega, bukan asal acak
+    let terbaik = { x: rnd(0, maksX), y: rnd(atas, maksY), d: -1 };
+    for (let i = 0; i < 40; i += 1) {
+      const x = rnd(0, maksX);
+      const y = rnd(atas, maksY);
+      const d = jarakKe(x, y);
+      if (d > terbaik.d) terbaik = { x, y, d };
+    }
+    return { x: terbaik.x, y: terbaik.y };
   }
 
   bersihkan() {

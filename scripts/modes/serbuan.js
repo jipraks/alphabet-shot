@@ -18,7 +18,7 @@ export const info = {
 };
 
 const DURASI = 30000;
-const BALON_LAYAR = 6;
+const BALON_MAKS = 6;
 const BENAR_LAYAR = 2;
 
 export async function jalankan(ctx) {
@@ -36,10 +36,23 @@ export async function jalankan(ctx) {
   const jam = ui.perintahExtra('⏱ 30');
   audio.katakanHuruf(target, `Tembak semua huruf ${ejaan(target)} kecil!`, { prioritas: true });
 
-  const pengecohBaru = () => pilihPengecoh(target, 1, { paket, tier })[0];
+  /**
+   * Jangan pernah dua balon berhuruf sama (kecuali balon target, yang memang
+   * boleh muncul beberapa). `tambahan` = huruf yang sudah masuk daftar tapi
+   * balonnya belum dibuat.
+   */
+  const pengecohBaru = (tambahan = []) => {
+    const dipakai = new Set([...field.hidup().map((b) => b.huruf), ...tambahan, kecil]);
+    const calon = pilihPengecoh(target, 12, { paket, tier });
+    return calon.find((h) => !dipakai.has(h)) || calon[0];
+  };
+  field.ukurUlang();
+  const BALON_LAYAR = Math.max(4, Math.min(BALON_MAKS, field.kapasitas()));
   const awal = [];
   for (let i = 0; i < BALON_LAYAR; i += 1) {
-    awal.push(i < BENAR_LAYAR ? { huruf: kecil, benar: true } : { huruf: pengecohBaru(), benar: false });
+    awal.push(i < BENAR_LAYAR
+      ? { huruf: kecil, benar: true }
+      : { huruf: pengecohBaru(awal.map((d) => d.huruf)), benar: false });
   }
   field.ukurUlang();          // kartu perintah sudah tampil di atas
   field.spawn(awal);

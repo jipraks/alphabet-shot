@@ -84,9 +84,13 @@ export class MesinRonde {
 
     // Isi ulang kalau tidak penuh (jeda pendingin yang disengaja)
     if (!weapon.tanpaBatas && weapon.peluru < weapon.pelurMaks) await weapon.isiUlang();
+    field.ukurUlang();
 
+    // Jepit jumlah balon ke kapasitas layar: lebih baik 4 balon lega daripada
+    // 8 balon tumpang tindih (kegagalan harus karena huruf, bukan karena jari).
+    const muat = Math.max(4, Math.min(jumlahBalon, field.kapasitas()));
     const { target, daftar } = o.susunan || this.susunBalon({
-      paket, tierAktif, jumlahBalon, hindari: o.hindari, sedangSulit: (h) => stats.sulit(h),
+      paket, tierAktif, jumlahBalon: muat, hindari: o.hindari, sedangSulit: (h) => stats.sulit(h),
     });
     ui.perintahTampil(target, o.label || 'Tembak huruf kecilnya!');
     field.ukurUlang();          // ukur SETELAH kartu perintah tampil
@@ -266,7 +270,8 @@ export class MesinRonde {
       const rec = tekan.get(ev.pointerId);
       rec.timer = setTimeout(() => {
         rec.chargeMulai = true;
-        weapon.mulaiCharge();
+        // sisa waktu supaya charge penuh tepat 1 detik sejak mulai menekan
+        weapon.mulaiCharge(CHARGE_PENUH - TAP_PENDEK);
       }, TAP_PENDEK);
     };
 

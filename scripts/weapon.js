@@ -353,15 +353,20 @@ export class Weapon {
   }
 
   /* ---------- Charge shot ---------- */
-  mulaiCharge() {
+  /**
+   * @param {number} sisa ms sampai charge penuh (dipanggil setelah tahan
+   *   terdeteksi, jadi sisanya lebih pendek dari 1 detik penuh)
+   */
+  mulaiCharge(sisa = 1000) {
     if (this.charged || this._charge) return;
+    this.el.style.setProperty('--t-charge', `${sisa}ms`);
     this.el.classList.add('charging');
-    this._charge = this.audio?.charge?.() || null;
+    this._charge = this.audio?.charge?.(sisa / 1000) || null;
     this._chargeTimer = setTimeout(() => {
       this.charged = true;
       this.el.classList.remove('charging');
       this.el.classList.add('charged');
-    }, 1000);
+    }, sisa);
   }
 
   batalCharge() {

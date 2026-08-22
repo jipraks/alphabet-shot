@@ -198,7 +198,7 @@ p  { margin: 0; font-size: clamp(13px, 2.3vh, 18px); line-height: 1.45; }
   font-weight: 700;
   font-size: clamp(20px, 4vh, 32px);
   line-height: 1.1;
-  color: rgba(255, 244, 220, 0.24);
+  color: rgba(255, 244, 220, 0.36);
   padding: 0.06em 0.26em 0.12em;
   border-radius: 8px;
 }
@@ -254,7 +254,7 @@ table.stat td.huruf-sel { font-family: var(--font-huruf); font-size: 1.35em; fon
 
 .grafik { width: 100%; height: clamp(90px, 18vh, 150px); }
 .grafik rect { fill: var(--mint); }
-.grafik text { fill: rgba(255,244,220,0.7); font-size: 9px; font-family: var(--font-ui); }
+.grafik text { fill: rgba(255,244,220,0.78); font-size: 11px; font-family: var(--font-ui); }
 .grafik line { stroke: rgba(255,244,220,0.2); stroke-width: 1; }
 
 .setelan { display: grid; gap: 10px; }

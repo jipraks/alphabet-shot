@@ -50,10 +50,11 @@ export async function jalankan(ctx) {
     if (skor[0] >= POIN_MENANG || skor[1] >= POIN_MENANG) break;
     if (ctx.batal && ctx.batal()) break;
 
+    field.ukurUlang();
     const { target, daftar } = mesin.susunBalon({
       paket: ctx.progress.data.paket,
       tierAktif: ctx.progress.setelan.tier_aktif,
-      jumlahBalon: 6,
+      jumlahBalon: Math.max(4, Math.min(6, field.kapasitas())),
       hindari,
       sedangSulit: (h) => stats.sulit(h),
     });
